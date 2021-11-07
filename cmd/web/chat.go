@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/KishorPokharel/chatapp/pkg/forms"
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -24,6 +24,7 @@ type message struct {
 	Name      string
 	Message   string
 	CreatedAt time.Time
+	Clients   []string
 }
 
 type client struct {
@@ -90,18 +91,22 @@ func (r *room) run() {
 		select {
 		case client := <-r.join:
 			r.clients[client] = true
-			name, _ := client.user["name"].(string)
+			currentClientNames := []string{}
+			for key, _ := range r.clients {
+				name, _ := key.user["name"].(string)
+				currentClientNames = append(currentClientNames, name)
+			}
 			msg := message{
 				EventType: "userJoin",
-				Name:      name,
+				Clients:   currentClientNames,
 			}
 			for c := range r.clients {
 				c.send <- msg
 			}
 		case client := <-r.leave:
 			name, _ := client.user["name"].(string)
-			close(client.send)
 			delete(r.clients, client)
+			close(client.send)
 			msg := message{
 				EventType: "userLeave",
 				Name:      name,

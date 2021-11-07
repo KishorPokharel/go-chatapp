@@ -33,7 +33,8 @@ $(function() {
 				messageHistory.append(
 					$("<div>").addClass("message-thread message-thread--sent").append(
 						$("<div>").addClass("message-thread__meta").append(
-							$("<span>").addClass("message-thread__createdat").text(msg.CreatedAt)
+							$("<span>").addClass("message-thread__createdat")
+                                       .text(moment(msg.CreatedAt).format('MM/DD/YYYY h:mm A'))
 						),
 						$("<div>").addClass("message-thread__body").text(msg.Message)
 					)
@@ -44,7 +45,8 @@ $(function() {
 					$("<div>").addClass("message-thread message-thread--received").append(
 						$("<div>").addClass("message-thread__meta").append(
 							$("<span>").addClass("message-thread__username").text(msg.Name),
-							$("<span>").addClass("message-thread__createdat").text(msg.CreatedAt)
+							$("<span>").addClass("message-thread__createdat")
+                                       .text(moment(msg.CreatedAt).format('MM/DD/YYYY, h:mm A'))
 						),
 						$("<div>").addClass("message-thread__body").text(msg.Message)
 					)

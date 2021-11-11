@@ -37,7 +37,7 @@ $(function() {
                     $("<div>").addClass("message-thread message-thread--sent").append(
                         $("<div>").addClass("message-thread__meta").append(
                             $("<span>").addClass("message-thread__createdat")
-                            .text(moment(msg.CreatedAt).format('MM/DD/YYYY h:mm A'))
+                            .text(moment(msg.CreatedAt).format('MM/DD/YYYY HH:mm A', {trim: false, useGrouping: false}))
                         ),
                         $("<div>").addClass("message-thread__body").text(msg.Message)
                     )
@@ -70,34 +70,3 @@ $(function() {
         }
     })
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

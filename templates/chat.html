@@ -25,7 +25,32 @@
                 </form>
             </div>
             <div class="main">
+                {{ $username := .User.Username}}
                 <div class="message-history">
+                    {{ range .Messages }}
+                        {{ if eq $username .Username }}
+                        <div class="message-thread message-thread--sent">
+                            <div class="message-thread__meta">
+                                <span class="message-thread__createdat">
+                                    {{humanDate .CreatedAt}}
+                                </span>
+                            </div>
+                            <div class="message-thread__body">{{.Body}}</div>
+                        </div>
+                        {{ else }}
+                        <div class="message-thread message-thread--received">
+                            <div class="message-thread__meta">
+                                <span class="message-thread__username">
+                                    {{.Username}}
+                                </span>
+                                <span class="message-thread__createdat">
+                                    {{humanDate .CreatedAt}}
+                                </span>
+                            </div>
+                            <div class="message-thread__body">{{.Body}}</div>
+                        </div>
+                        {{ end }}
+                    {{ end }}
                 </div>
                 <div class="message-box">
                     <input type="text" class="message-input">

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/KishorPokharel/chatapp/pkg/forms"
+	"github.com/KishorPokharel/chatapp/pkg/models"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,6 +33,7 @@ type client struct {
 	send   chan message
 	room   room
 	user   map[string]interface{}
+	app    *application
 }
 
 func (c *client) read() {
@@ -44,8 +46,15 @@ func (c *client) read() {
 			return
 		}
 		name, _ := c.user["name"].(string)
+		id, _ := c.user["id"].(int64)
 		msg.Name = name
-		msg.CreatedAt = time.Now()
+		m := &models.Message{UserID: id, Body: msg.Message}
+		err = c.app.models.Messages.Insert(m)
+		if err != nil {
+			c.app.logger.Println("Couldnot insert a message: ", err)
+			continue
+		}
+		msg.CreatedAt = m.CreatedAt
 		c.room.forward <- msg
 	}
 }
@@ -92,7 +101,7 @@ func (r *room) run() {
 		case client := <-r.join:
 			r.clients[client] = true
 			currentClientNames := []string{}
-			for key, _ := range r.clients {
+			for key := range r.clients {
 				name, _ := key.user["name"].(string)
 				currentClientNames = append(currentClientNames, name)
 			}
@@ -136,7 +145,9 @@ func (app *application) roomHandler(w http.ResponseWriter, r *http.Request) {
 		room:   *app.chatroom,
 		user: map[string]interface{}{
 			"name": usr.Username,
+			"id":   usr.ID,
 		},
+		app: app,
 	}
 	client.room.join <- client
 	defer func() {
@@ -147,5 +158,14 @@ func (app *application) roomHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) chatHandler(w http.ResponseWriter, r *http.Request) {
-	app.render(w, r, "chat.html", &templateData{Form: forms.New(nil)})
+	usr := app.contextGetUser(r)
+	messages, err := app.models.Messages.GetAll()
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+	app.render(w, r, "chat.html", &templateData{
+		Form:     forms.New(nil),
+		Messages: messages,
+		User:     usr,
+	})
 }

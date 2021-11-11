@@ -31,8 +31,7 @@ func (app *application) render(
 	err := tmpl.Execute(buf, app.addDefaultData(data, r))
 	// TODO: needs proper error handling
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "Something Went Wrong", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 		return
 	}
 	buf.WriteTo(w)

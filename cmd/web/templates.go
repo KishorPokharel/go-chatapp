@@ -15,6 +15,7 @@ type templateData struct {
 	Form            *forms.Form
 	IsAuthenticated bool
 	User            *models.User
+	Messages        []*models.Message
 }
 
 func humanDate(t time.Time) string {
@@ -22,7 +23,7 @@ func humanDate(t time.Time) string {
 		return ""
 	}
 
-	return t.UTC().Format("02 Jan 2006 at 15:04")
+	return t.Format("01/02/2006 15:04 PM")
 }
 
 var functions = template.FuncMap{

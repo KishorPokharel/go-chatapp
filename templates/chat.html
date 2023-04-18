@@ -1,62 +1,65 @@
 {{ define "base" }}
 <html>
-    <head>
-        <title>ChatApp</title>
-        <link rel="stylesheet" href="http://localhost:3000/static/style.css" />
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-        <script defer src="http://localhost:3000/static/index.js"></script>
-        <script defer src="http://localhost:3000/static/moment.js"></script>
-    </head>
+  <head>
+    <title>ChatApp</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+      rel="stylesheet" />
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+    <script defer src="/static/index.js"></script>
+    <script defer src="/static/moment.js"></script>
+    <script defer>
+      window.localStorage.setItem('user', '{{.User.Username}}');
+    </script>
+  </head>
 
-    <body>
-        <div class="container">
-            <div class="sidebar">
-                <div class="banner">
-                    <h3>Online</h3>
-                </div>
-                <div class="online-people">
-                </div>
-                <form id="logoutform" action="/logout" method="POST">
-                    <input type="submit" hidden value="logout" >
-                    <a onclick="logoutform.submit()">Logout «</a>
-                </form>
-            </div>
-            <div class="main">
-                {{ $username := .User.Username}}
-                <div class="message-history">
-                    {{ range .Messages }}
-                        {{ if eq $username .Username }}
-                        <div class="message-thread message-thread--sent">
-                            <div class="message-thread__meta">
-                                <span class="message-thread__createdat">
-                                    {{humanDate .CreatedAt}}
-                                </span>
-                            </div>
-                            <div class="message-thread__body">{{.Body}}</div>
-                        </div>
-                        {{ else }}
-                        <div class="message-thread message-thread--received">
-                            <div class="message-thread__meta">
-                                <span class="message-thread__username">
-                                    {{.Username}}
-                                </span>
-                                <span class="message-thread__createdat">
-                                    {{humanDate .CreatedAt}}
-                                </span>
-                            </div>
-                            <div class="message-thread__body">{{.Body}}</div>
-                        </div>
-                        {{ end }}
-                    {{ end }}
-                </div>
-                <div class="message-box">
-                    <input type="text" class="message-input">
-                </div>
-            </div>
+  <body>
+    <div class="container">
+      <div class="sidebar">
+        <div class="banner">
+          <h3>Online</h3>
         </div>
-    </body>
+        <div class="online-people"></div>
+        <form id="logoutform" action="/logout" method="POST">
+          <input type="submit" hidden value="logout" />
+          <a onclick="logoutform.submit()">Logout «</a>
+        </form>
+      </div>
+      <div class="main">
+        {{ $username := .User.Username}}
+        <div class="message-history">
+          {{ range .Messages }} {{ if eq $username .Username }}
+          <div class="message-thread message-thread--sent">
+            <div class="message-thread__meta">
+              <span class="message-thread__createdat">
+                {{humanDate .CreatedAt}}
+              </span>
+            </div>
+            <div class="message-thread__body">{{.Body}}</div>
+          </div>
+          {{ else }}
+          <div class="message-thread message-thread--received">
+            <div class="message-thread__meta">
+              <span class="message-thread__username"> {{.Username}} </span>
+              <span class="message-thread__createdat">
+                {{humanDate .CreatedAt}}
+              </span>
+            </div>
+            <div class="message-thread__body">{{.Body}}</div>
+          </div>
+          {{ end }} {{ end }}
+        </div>
+        <div class="message-box">
+          <input type="text" value="" class="message-input" />
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
 {{ end }}

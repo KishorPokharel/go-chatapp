@@ -54,7 +54,7 @@ audit:
 .PHONY: build/app
 build/app:
 	@echo 'Building application...'
-	@go1.16.5 build -o bin/chatapp ./cmd/web
+	@go build -o bin/chatapp ./cmd/web
 
 ## build/run: run the binary
 .PHONY: build/run

@@ -20,12 +20,22 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: socketBufferSize,
 }
 
+type eventType string
+
+const (
+	eventChat     eventType = "message"
+	eventJoin     eventType = "join"
+	eventLeave    eventType = "leave"
+	eventError    eventType = "error"
+	eventUserList eventType = "users"
+)
+
 type message struct {
-	EventType string
-	Name      string
-	Message   string
-	CreatedAt time.Time
-	Clients   []string
+	Type    eventType `json:"type"`
+	Sender  string    `json:"sender,omitempty"`
+	Content string    `json:"content,omitempty"`
+	Date    time.Time `json:"date,omitempty"`
+	Clients []string  `json:"clients,omitempty"`
 }
 
 type client struct {
@@ -47,14 +57,14 @@ func (c *client) read() {
 		}
 		name, _ := c.user["name"].(string)
 		id, _ := c.user["id"].(int64)
-		msg.Name = name
-		m := &models.Message{UserID: id, Body: msg.Message}
+		msg.Sender = name
+		m := &models.Message{UserID: id, Body: msg.Content}
 		err = c.app.models.Messages.Insert(m)
 		if err != nil {
 			c.app.logger.Println("Couldnot insert a message: ", err)
 			continue
 		}
-		msg.CreatedAt = m.CreatedAt
+		msg.Date = m.CreatedAt
 		c.room.forward <- msg
 	}
 }
@@ -62,14 +72,7 @@ func (c *client) read() {
 func (c *client) write() {
 	defer c.socket.Close()
 	for msg := range c.send {
-		name, _ := c.user["name"].(string)
-		if msg.EventType == "" {
-			if msg.Name == name {
-				msg.EventType = "messageSent"
-			} else {
-				msg.EventType = "messageReceived"
-			}
-		}
+		//name, _ := c.user["name"].(string)
 		err := c.socket.WriteJSON(msg)
 		if err != nil {
 			log.Println("[Client] could not write message", err)
@@ -100,14 +103,18 @@ func (r *room) run() {
 		select {
 		case client := <-r.join:
 			r.clients[client] = true
-			currentClientNames := []string{}
+			currentClientNames := make(map[string]bool)
 			for key := range r.clients {
 				name, _ := key.user["name"].(string)
-				currentClientNames = append(currentClientNames, name)
+				currentClientNames[name] = true
+			}
+			keys := []string{}
+			for key := range currentClientNames {
+				keys = append(keys, key)
 			}
 			msg := message{
-				EventType: "userJoin",
-				Clients:   currentClientNames,
+				Type:    eventJoin,
+				Clients: keys,
 			}
 			for c := range r.clients {
 				c.send <- msg
@@ -117,8 +124,8 @@ func (r *room) run() {
 			delete(r.clients, client)
 			close(client.send)
 			msg := message{
-				EventType: "userLeave",
-				Name:      name,
+				Type:   eventLeave,
+				Sender: name,
 			}
 			for c := range r.clients {
 				c.send <- msg
